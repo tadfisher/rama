@@ -45,10 +45,6 @@ class WindowManager(object):
         except xproto.BadAccess:
             raise Exception("Another window manager is already running.")
         self.scan_for_clients()
-        for client in self.clients:
-            self.sel_view.clients.append(client)
-        self.sel_view.redisplay()
-        self.conn.flush()
         
     def stop_managing(self):
         conn.disconnect()
@@ -74,6 +70,8 @@ class WindowManager(object):
 
     def manage_window(self, win):
         if win == self.root.root: return
+        if self.win_to_client(win): return
+
         get_geom = self.conn.core.GetGeometry(win).reply()
         geom = Geom(get_geom.x, get_geom.y, get_geom.width, get_geom.height)
         client = Client(self.conn, win, geom)
@@ -89,6 +87,9 @@ class WindowManager(object):
             ]
         self.conn.core.ChangeWindowAttributes(win, value_mask, value_list)
         self.conn.core.MapWindow(win)
+        self.sel_view.clients.append(client)
+        self.sel_view.redisplay()
+        self.conn.flush()
         return client
     
     def unmanage_client(self, client):
@@ -97,6 +98,7 @@ class WindowManager(object):
                 view.clients.remove(client)
         self.clients.remove(client)
         self.sel_view.redisplay()
+        self.conn.flush()
 
     def win_to_client(self, win):
         for client in self.clients:
@@ -107,11 +109,8 @@ class WindowManager(object):
     def handle_event(self, event):
         evname = capital_letter_re.sub('_\\1', event.__class__.__name__[:-5]).lower()
         if hasattr(self, evname):
-            print 'Handled event: '+evname
             handle = getattr(self, evname)
             handle(event)
-        else:
-            print 'Unhandled event: '+evname
 
     # Event handlers
 
@@ -123,7 +122,6 @@ class WindowManager(object):
         client = self.win_to_client(event.window)
         if not client: return
         self.unmanage_client(client)
-        self.conn.flush()
 
     def enter_notify(self, event):
         if event.mode is not xproto.NotifyMode.Normal: return
@@ -140,9 +138,6 @@ class WindowManager(object):
         if self.win_to_client(event.window):
             return
         client = self.manage_window(event.window)
-        self.sel_view.clients.append(client)
-        self.sel_view.redisplay()
-        self.conn.flush()
 
     def unmap_notify(self, event):
         self.destroy_notify(event)
