@@ -1,4 +1,5 @@
 from client import Client
+from keys import Keymap
 from view import View
 from util import Geom
 from xcb import xproto
@@ -24,11 +25,12 @@ class WindowManager(object):
 
         # Setup event mask
         self.mask = (
-            EventMask.EnterWindow | 
-            EventMask.FocusChange |
-            EventMask.LeaveWindow |
-            EventMask.PropertyChange | 
-            EventMask.SubstructureNotify |
+            EventMask.EnterWindow          | 
+            EventMask.FocusChange          |
+            EventMask.KeyPress             |
+            EventMask.LeaveWindow          |
+            EventMask.PropertyChange       | 
+            EventMask.SubstructureNotify   |
             EventMask.SubstructureRedirect
         )
 
@@ -36,17 +38,25 @@ class WindowManager(object):
         for name in config['views']:
             self.views.append(View(name, self.root_geom, config['layouts']))
         self.sel_view = self.views[0]
+
+        # Keybindings
+        self.keymap = Keymap(conn, config['keys'])
         
     def start_managing(self):
         # Select for WM events
-        cookie = self.conn.core.ChangeWindowAttributesChecked(self.root.root, xproto.CW.EventMask, [self.mask])
+        cookie = self.conn.core.ChangeWindowAttributesChecked(
+            self.root.root, 
+            xproto.CW.EventMask, 
+            [self.mask])
         try:
             cookie.check()
         except xproto.BadAccess:
             raise Exception("Another window manager is already running.")
+        self.keymap.grab(self.conn, self.root.root)
         self.scan_for_clients()
         
     def stop_managing(self):
+        self.keymap.ungrab(self.conn, self.root.root)
         conn.disconnect()
 
     def scan_for_clients(self):
@@ -62,11 +72,17 @@ class WindowManager(object):
         if client in self.focused:
             self.focused.remove(client)
         self.focused.append(client)
-        self.conn.core.SetInputFocus(xproto.InputFocus.PointerRoot, client.win, xproto.Time.CurrentTime)
+        self.conn.core.SetInputFocus(
+            xproto.InputFocus.PointerRoot,
+            client.win, 
+            xproto.Time.CurrentTime)
         self.conn.flush()
 
     def unfocus(self, client):
-        self.conn.core.SetInputFocus(xproto.InputFocus.PointerRoot, self.root.root, xproto.Time.CurrentTime)
+        self.conn.core.SetInputFocus(
+            xproto.InputFocus.PointerRoot, 
+            self.root.root, 
+            xproto.Time.CurrentTime)
 
     def manage_window(self, win):
         if win == self.root.root: return
@@ -87,15 +103,16 @@ class WindowManager(object):
             ]
         self.conn.core.ChangeWindowAttributes(win, value_mask, value_list)
         self.conn.core.MapWindow(win)
-        self.sel_view.clients.append(client)
+        self.sel_view.add_client(client)
         self.sel_view.redisplay()
         self.conn.flush()
+        print 'mapping window: %x' % win
         return client
     
     def unmanage_client(self, client):
         for view in self.views:
             if client in view.clients:
-                view.clients.remove(client)
+                view.remove_client(client)
         self.clients.remove(client)
         self.sel_view.redisplay()
         self.conn.flush()
@@ -107,7 +124,10 @@ class WindowManager(object):
         return None
 
     def handle_event(self, event):
-        evname = capital_letter_re.sub('_\\1', event.__class__.__name__[:-5]).lower()
+        evname = capital_letter_re.sub(
+            '_\\1', 
+            event.__class__.__name__[:-5]).lower()
+        print 'Event: '+evname
         if hasattr(self, evname):
             handle = getattr(self, evname)
             handle(event)
@@ -132,7 +152,13 @@ class WindowManager(object):
 
     def focus_in(self, event):
         if self.sel_client and event.event != self.sel_client.win:
-            self.conn.core.SetInputFocus(xproto.InputFocus.PointerRoot, event.event, xproto.Time.CurrentTime)
+            self.conn.core.SetInputFocus(
+                xproto.InputFocus.PointerRoot, 
+                event.event, 
+                xproto.Time.CurrentTime)
+
+    def key_press(self, event):
+        self.keymap.handle(event)
 
     def map_request(self, event):
         if self.win_to_client(event.window):
@@ -140,5 +166,7 @@ class WindowManager(object):
         client = self.manage_window(event.window)
 
     def unmap_notify(self, event):
-        self.destroy_notify(event)
+        client = self.win_to_client(event.window)
+        if not client: return
+        self.unmanage_client(client)
 

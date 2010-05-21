@@ -3,6 +3,9 @@ import xcb
 import xcb.xproto
 import wm
 
+import sys
+import traceback
+
 def run(config):
     conn = xcb.connect(display=os.environ['DISPLAY'])
     winman = wm.WindowManager(conn, config)
@@ -14,16 +17,16 @@ def run(config):
             event = conn.wait_for_event()
         except xcb.ProtocolException, error:
             print "Protocol error %s received!" % error.__class__.__name__
-            break
-        except:
+            print dir(error.args)
+            traceback.print_exc(file=sys.stdout)
+            print winman.clients
+        except Exception, error:
             print "Unexpected error received: %s" % error.message
+            traceback.print_exc(file=sys.stdout)
             break
         winman.handle_event(event)
-
 
     conn.disconnect()
 
 if __name__ == '__main__':
     run()
-
-

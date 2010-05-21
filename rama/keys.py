@@ -49,7 +49,9 @@ def get_numlock_mask(conn):
 class Keymap(object):
     bindings = {}
 
-    def __init__(self, conn, keys={}):
+    def __init__(self, conn, keys=None):
+        if keys is None:
+            keys = {}
         self.numlockmask = get_numlock_mask(conn)
         self.syms = Keysyms(conn)
         for keystr in keys:
