@@ -22,7 +22,7 @@ class Frame(object):
         self.child = child
 
     def __len__(self):
-        if self.child is not None:
+        if self.child:
             return 1
         return 0
 
@@ -36,16 +36,9 @@ class Frame(object):
         """
         Applies current geometry to child element, if it exists.
         """
-        if self.child is not None:
+        if self.child:
             self.child.geom = self.geom.copy()
             self.child.redisplay()
-
-    def find(self, client):
-        """
-        Return the Frame containing client.
-        """
-        if self.child == client:
-            return self
 
     def contains(self, frame):
         """
@@ -54,6 +47,14 @@ class Frame(object):
         if self.child == frame:
             return True
         return False
+
+    def find(self, client):
+        """
+        Return the Frame containing client.
+        """
+        if self.child == client:
+            return self
+        return None
 
 class SplitFrame(Frame):
     """
@@ -76,8 +77,7 @@ class SplitFrame(Frame):
             self.children = children
         self.ratios = {}
         self.balance()
-        self.geom = geom
-        print self.ratios
+        self.geom = geom.copy()
 
     def __len__(self):
         return len(self.children)
@@ -99,7 +99,7 @@ class SplitFrame(Frame):
             return
         q = 10000 // n
         r = 10000 % q
-        for (i, c) in enumerate(self.children):
+        for c in self.children:
             if r > 0:
                 self.ratios[c] = q + 1
                 r -= 1
@@ -167,7 +167,7 @@ class SplitFrame(Frame):
         """
         for child in self.children:
             if child.contains(client):
-                return child
+                return child.find(client)
         return None
 
 class VSplitFrame(SplitFrame):
@@ -201,8 +201,10 @@ class VSplitFrame(SplitFrame):
         the vertical split algorithm.
         """
 
+        print self.ratios
+
         cur_y = 0
-        for (i, c) in enumerate(self.children):
+        for c in self.children:
             c.geom.x = self.geom.x
             c.geom.y = cur_y
             c.geom.width = self.geom.width
@@ -239,14 +241,14 @@ class HSplitFrame(SplitFrame):
         the horizontal split algorithm.
         """
 
+        print self.ratios
+
         cur_x = 0
-        for (i, c) in enumerate(self.children):
+        for c in self.children:
             c.geom.x = cur_x
             c.geom.y = self.geom.y
             c.geom.width = (self.ratios[c] * self.geom.width) // 10000
+            print "RATIO: %d WIDTH: %d" % (self.ratios[c], self.geom.width)
             c.geom.height = self.geom.height
-            print c.geom.height
-            print c.geom.width
-            print self.ratios
             c.redisplay()
             cur_x += c.geom.width
