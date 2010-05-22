@@ -17,9 +17,7 @@ def run(config):
             event = conn.wait_for_event()
         except xcb.ProtocolException, error:
             print "Protocol error %s received!" % error.__class__.__name__
-            print dir(error.args)
             traceback.print_exc(file=sys.stdout)
-            print winman.clients
         except Exception, error:
             print "Unexpected error received: %s" % error.message
             traceback.print_exc(file=sys.stdout)

@@ -201,8 +201,6 @@ class VSplitFrame(SplitFrame):
         the vertical split algorithm.
         """
 
-        print self.ratios
-
         cur_y = 0
         for c in self.children:
             c.geom.x = self.geom.x
@@ -241,14 +239,11 @@ class HSplitFrame(SplitFrame):
         the horizontal split algorithm.
         """
 
-        print self.ratios
-
         cur_x = 0
         for c in self.children:
             c.geom.x = cur_x
             c.geom.y = self.geom.y
             c.geom.width = (self.ratios[c] * self.geom.width) // 10000
-            print "RATIO: %d WIDTH: %d" % (self.ratios[c], self.geom.width)
             c.geom.height = self.geom.height
             c.redisplay()
             cur_x += c.geom.width

@@ -19,16 +19,11 @@ class Tile(Layout):
 
     def debug(self):
         self.root.debug()
-        print 'len(self.master) = %d' % len(self.master)
-        print 'len(self.stack) = %d' % len(self.stack)
     
     def arrange(self):
         return self.root
 
     def add(self, client):
-        print 'adding window to layout'
-        print 'before add:'
-        self.debug()
         client_frame = Frame(self.geom, client)
         if len(self.master) == self.nmaster:
             if len(self.stack) == 0:
@@ -42,19 +37,12 @@ class Tile(Layout):
         else:
             self.master.add(client_frame)
             self.focused_master = client_frame
-        print 'after add:'
-        self.debug()
 
     def remove(self, client):
-        print 'removing window from layout'
-        print 'before remove:'
         client_frame = self.root.find(client)
         if not client_frame:
-            print 'remove frame: not found'
             return
         if self.master.contains(client):
-            print 'master contains client'
-            print 'client frame: %s' % client_frame
             self.master.remove(client_frame)
             if len(self.stack):
                 self.stack.remove(self.focused_stack)
@@ -65,8 +53,6 @@ class Tile(Layout):
                 else:
                     self.root.remove(self.stack)
         elif self.stack.contains(client):
-            print 'stack contains client'
-            print 'client frame: %s' % client_frame
             client_frame = self.stack.find(client)
             self.stack.remove(client_frame)
             if len(self.stack.children):
@@ -74,9 +60,6 @@ class Tile(Layout):
                     self.focused_stack = self.stack.children[0]
             else:
                 self.root.remove(self.stack)
-        print 'removed window from layout'
-        print 'after remove:'
-        self.debug()
     
     def focus(self, client):
         pass
