@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+from rama import event
+from rama.actions import launch
 from rama.main import main
 from rama.layouts.tile import tile
-from rama.actions import launch
 
 
 def hello_world(**kw):
@@ -17,8 +18,9 @@ config = {
     }
 
 app = main(config)
-
 wm = app.wm
+xec = app.xec
 
+event.register_all(xec)
 
 app.run()

@@ -19,6 +19,7 @@ class Dispatcher(object):
                     chains.pop(i)
 
     def dispatch(self, name, **kw):
+        print 'dispatching: %s' % name
         kw_dict = dict(self.defaults, **kw)
         for chain in self.handlers.get(name, [])[:]:
             for func in chain:

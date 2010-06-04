@@ -3,12 +3,9 @@ from rama.dispatch import Dispatcher
 from rama.keys import Keymap
 from rama.util import Geom
 from rama.view import View
-import re
 from xcb import xproto
 from xcb.xproto import EventMask
 
-
-CAPITAL_LETTER_RE = re.compile(r'\B([A-Z])')
 
 WM_EV_MASK = (
     EventMask.EnterWindow          | 
@@ -129,50 +126,3 @@ class WindowManager(Dispatcher):
             if client.win == win:
                 return client
         return None
-
-    def handle_event(self, event):
-        evname = CAPITAL_LETTER_RE.sub(
-            '_\\1', event.__class__.__name__[:-5]).lower()
-        if hasattr(self, evname):
-            handle = getattr(self, evname)
-            handle(event)
-
-    # Event handlers
-
-    def configure_notify(self, event):
-        # Use to detect when to resize root win
-        # Oh, and floating windows too :)
-        pass
-
-    def destroy_notify(self, event):
-        client = self.win_to_client(event.window)
-        if not client: return
-        self.unmanage_client(client)
-
-    def enter_notify(self, event):
-        if event.mode is not xproto.NotifyMode.Normal: return
-        client = self.win_to_client(event.event)
-        if not client: 
-            return
-        self.focus(client)
-
-    def focus_in(self, event):
-        if self.sel_client and event.event != self.sel_client.win:
-            self.conn.core.SetInputFocus(
-                xproto.InputFocus.PointerRoot, 
-                event.event, 
-                xproto.Time.CurrentTime)
-
-    def key_press(self, event):
-        self.keymap.handle(event)
-
-    def map_request(self, event):
-        if self.win_to_client(event.window):
-            return
-        client = self.manage_window(event.window)
-
-    def unmap_notify(self, event):
-        client = self.win_to_client(event.window)
-        if not client: return
-        self.unmanage_client(client)
-

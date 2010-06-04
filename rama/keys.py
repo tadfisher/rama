@@ -1,8 +1,10 @@
+from rama.dispatch import Dispatcher
+from rama.keysymdef import keysyms
+from rama.keysyms import Keysyms, keysym_to_str, keysym_to_char
 from xcb.xproto import ModMask, GrabMode
-from keysymdef import keysyms
-from keysyms import Keysyms, keysym_to_str, keysym_to_char
 
-masks = [ModMask.Shift,
+
+MASKS = [ModMask.Shift,
          ModMask.Lock,
          ModMask.Control,
          ModMask._1,
@@ -11,13 +13,15 @@ masks = [ModMask.Shift,
          ModMask._4,
          ModMask._5]
 
-modstrs = {'C': ModMask.Control,
+MODSTRS = {'C': ModMask.Control,
            'S': ModMask.Shift,
            'M': ModMask._1,
            's': ModMask._5}
 
+
 class KeyParseError(Exception):
     pass
+
 
 def parse(keystr):
     """
@@ -27,13 +31,14 @@ def parse(keystr):
     modmask = 0
     keys = keystr.split('-')
     for mod in keys[:-1]:
-        if mod not in modstrs:
+        if mod not in MODSTRS:
             raise KeyParseError()
-        modmask = modmask | modstrs[mod]
+        modmask = modmask | MODSTRS[mod]
     key = keys[-1:][0]
     if key not in keysyms:
         raise KeyParseError()
     return (modmask, keysyms[key])
+
 
 def get_numlock_mask(conn):
     syms = Keysyms(conn)
@@ -43,8 +48,9 @@ def get_numlock_mask(conn):
         for j in range(modmap.keycodes_per_modifier):
             keycode = modmap.keycodes[i * modmap.keycodes_per_modifier + j]
             if keycode == numlock:
-                return masks[i]
+                return MASKS[i]
     return 0
+
 
 class Keymap(object):
     bindings = {}
