@@ -1,15 +1,26 @@
-from client import Client
-from keys import Keymap
-from view import View
-from util import Geom
-from xcb import xproto
+from rama.client import Client
+from rama.dispatch import Dispatcher
+from rama.keys import Keymap
+from rama.util import Geom
+from rama.view import View
 import re
-import xcb
+from xcb import xproto
 from xcb.xproto import EventMask
 
-capital_letter_re = re.compile(r'\B([A-Z])')
 
-class WindowManager(object):
+CAPITAL_LETTER_RE = re.compile(r'\B([A-Z])')
+
+WM_EV_MASK = (
+    EventMask.EnterWindow          | 
+    EventMask.FocusChange          |
+    EventMask.KeyPress             |
+    EventMask.LeaveWindow          |
+    EventMask.PropertyChange       | 
+    EventMask.SubstructureNotify   |
+    EventMask.SubstructureRedirect)
+
+
+class WindowManager(Dispatcher):
     clients = []
     focused = []
     views = []
@@ -17,23 +28,14 @@ class WindowManager(object):
     sel_view = None
 
     def __init__(self, conn, config):
+        super(WindowManager, self).__init__(wm=self)
+
         self.conn = conn
 
         # Setup root window
         setup = conn.get_setup();
         self.root = root = setup.roots[conn.pref_screen]
         self.root_geom = Geom(0, 0, root.width_in_pixels, root.height_in_pixels)
-
-        # Setup event mask
-        self.mask = (
-            EventMask.EnterWindow          | 
-            EventMask.FocusChange          |
-            EventMask.KeyPress             |
-            EventMask.LeaveWindow          |
-            EventMask.PropertyChange       | 
-            EventMask.SubstructureNotify   |
-            EventMask.SubstructureRedirect
-        )
 
         # Setup views
         for name in config['views']:
@@ -48,7 +50,7 @@ class WindowManager(object):
         cookie = self.conn.core.ChangeWindowAttributesChecked(
             self.root.root, 
             xproto.CW.EventMask, 
-            [self.mask])
+            [WM_EV_MASK])
         try:
             cookie.check()
         except xproto.BadAccess:
@@ -89,6 +91,8 @@ class WindowManager(object):
         if win == self.root.root: return
         if self.win_to_client(win): return
 
+        self.dispatch('before_manage_window', win=win)
+
         get_geom = self.conn.core.GetGeometry(win).reply()
         geom = Geom(get_geom.x, get_geom.y, get_geom.width, get_geom.height)
         client = Client(self.conn, win, geom)
@@ -107,6 +111,9 @@ class WindowManager(object):
         self.sel_view.add_client(client)
         self.sel_view.redisplay()
         self.conn.flush()
+
+        self.dispatch('after_manage_window', win=win, client=client)
+
         return client
     
     def unmanage_client(self, client):
@@ -124,9 +131,8 @@ class WindowManager(object):
         return None
 
     def handle_event(self, event):
-        evname = capital_letter_re.sub(
-            '_\\1', 
-            event.__class__.__name__[:-5]).lower()
+        evname = CAPITAL_LETTER_RE.sub(
+            '_\\1', event.__class__.__name__[:-5]).lower()
         if hasattr(self, evname):
             handle = getattr(self, evname)
             handle(event)
@@ -135,6 +141,7 @@ class WindowManager(object):
 
     def configure_notify(self, event):
         # Use to detect when to resize root win
+        # Oh, and floating windows too :)
         pass
 
     def destroy_notify(self, event):
