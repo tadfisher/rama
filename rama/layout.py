@@ -1,16 +1,17 @@
-from frame import *
-
-class Layout(object):
+class Layout():
     """
     Base class for layouts. This is here to enforce behavior all
     layouts should support.
     """
 
-    def activate(self):
+    def handle_command(self, **kw):
         raise NotImplementedError
+
+    def activate(self, dispatcher):
+        dispatcher.register('layout', self.handle_command)
     
-    def deactivate(self):
-        raise NotImplementedError
+    def deactivate(self, dispatcher):
+        dispatcher.unregister(self.handle_command)
     
     def arrange(self):
         raise NotImplementedError
@@ -23,3 +24,8 @@ class Layout(object):
 
     def focus(self, client):
         raise NotImplementedError
+
+def layout(cls, *args, **kw):
+    def setup(geom):
+        return cls(geom, *args, **kw)
+    return setup

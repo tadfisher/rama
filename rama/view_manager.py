@@ -4,6 +4,7 @@ from rama.view import View
 class ViewManager(object):
     def __init__(self, wm, cmd, layouts):
         self.wm = wm
+        self.cmd = cmd
         self.views = OrderedDict()
         self.default_names = []
         self.layouts = layouts
@@ -12,7 +13,7 @@ class ViewManager(object):
 
         wm.register('after_manage_window', self.manage_client)
         wm.register('before_unmanage_client', self.unmanage_client)
-        cmd.register('command_view', self.command)
+        cmd.register('view', self.command)
 
     def set_default(self, *names):
         self.default_names = []
@@ -22,7 +23,7 @@ class ViewManager(object):
 
     def add(self, name):
         if name not in self.views.keys():
-            self.views[name] = View(self.geom, self.layouts)
+            self.views[name] = View(self.cmd, self.geom, self.layouts)
         if len(self.views) == 1:
             self.select_name(name)
             
@@ -86,5 +87,7 @@ class ViewManager(object):
     def command(self, **kw):
         args = kw['args']
 
-        if not len(args):
-            return              # TODO signal error
+        if len(args) == 0: return
+        if args[0] == 'refresh':
+            self.views[self.selected].redisplay()
+            self.wm.flush()

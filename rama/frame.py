@@ -20,6 +20,7 @@ class Frame(object):
         """
         self.geom = geom.copy()
         self.child = child
+        self.parent = None
 
     def __len__(self):
         if self.child:
@@ -44,7 +45,7 @@ class Frame(object):
         """
         Return True if this frame contains the requested child.
         """
-        if self.child == frame:
+        if self == frame or self.child == frame:
             return True
         return False
 
@@ -52,8 +53,18 @@ class Frame(object):
         """
         Return the Frame containing client.
         """
-        if self.child == client:
+        if self == client or self.child == client:
             return self
+        return None
+
+    def next_sibling(self, cyclical=False):
+        if self.parent:
+            return self.parent.next(self, cyclical)
+        return None
+
+    def prev_sibling(self, cyclical=False):
+        if self.parent:
+            return self.parent.prev(self, cyclical)
         return None
 
 class SplitFrame(Frame):
@@ -75,6 +86,7 @@ class SplitFrame(Frame):
             self.children = []
         else:
             self.children = children
+        self.parent = None
         self.ratios = {}
         self.balance()
         self.geom = geom.copy()
@@ -128,11 +140,14 @@ class SplitFrame(Frame):
                 self.ratios[child] = int((self.ratios[child] / 10000) * t)
             self.ratios[frame] = q
         self.children.append(frame)
+        frame.parent = self
 
     def replace(self, frame, newframe):
         index = self.children.index(frame)
         self.children.remove(frame)
+        frame.parent = None
         self.children.insert(index, newframe)
+        newframe.parent = self
 
     def remove(self, frame):
         """
@@ -168,6 +183,37 @@ class SplitFrame(Frame):
         for child in self.children:
             if child.contains(client):
                 return child.find(client)
+        return None
+
+    def next(self, child, cyclical=False):
+        """
+        Return the next sibling of child.
+        """
+        if child not in self.children: return None
+        i = self.children.index(child)
+        if cyclical:
+            return self.children[(i+1) % len(self.children)]
+        i += 1
+        if i <= len(self.children) - 1:
+            return self.children[i]
+        return None
+
+    def prev(self, child, cyclical=False):
+        """
+        Return the previous sibling of child.
+        """
+        if child not in self.children: return None
+        i = self.children.index(child)
+        if cyclical:
+            return self.children[(i-1) % len(self.children)]
+        i -= 1
+        if i >= 0:
+            return self.children[i]
+        return None
+
+    def at_index(self, index):
+        if index in range(len(self.children)):
+            return self.children[index]
         return None
 
 class VSplitFrame(SplitFrame):
@@ -209,6 +255,7 @@ class VSplitFrame(SplitFrame):
             c.geom.height = (self.ratios[c] * self.geom.height) // 10000
             c.redisplay()
             cur_y += c.geom.height
+
 
 class HSplitFrame(SplitFrame):
     """

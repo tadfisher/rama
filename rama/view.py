@@ -1,7 +1,8 @@
 import layout
 
 class View(object):
-    def __init__(self, geom, layouts):
+    def __init__(self, cmd, geom, layouts):
+        self.cmd = cmd
         self.geom = geom
         self.layouts = []
         self.clients = []
@@ -10,9 +11,11 @@ class View(object):
         self.sel_layout = self.layouts[0]
 
     def activate(self):
+        self.sel_layout.activate(self.cmd)
         self.redisplay()
 
     def deactivate(self):
+        self.sel_layout.deactivate(self.cmd)
         for client in self.clients:
             client.hide()
         

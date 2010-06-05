@@ -40,6 +40,13 @@ class Client(object):
             # received the event.
             self.conn.core.ConfigureWindow(self.win, value_mask, value_list)
 
+    def focus(self):
+        self.conn.core.SetInputFocus(
+            xproto.InputFocus.PointerRoot,
+            self.win,
+            xproto.Time.CurrentTime)
+        self.conn.flush()
+
     def hide(self):
         value_mask = xproto.ConfigWindow.X | xproto.ConfigWindow.Y
         value_list = [self.geom.x + (2*self.geom.width), self.geom.y]
@@ -48,6 +55,3 @@ class Client(object):
     def redisplay(self):
         self.configure(x=self.geom.x, y=self.geom.y, 
                        width=self.geom.width, height=self.geom.height)
-
-    def focus(sef):
-        self.dpy

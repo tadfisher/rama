@@ -3,7 +3,8 @@ from rama import event
 from rama.actions import launch
 from rama.keys import Keymap
 from rama.main import Main
-from rama.layouts.tile import tile
+from rama.layout import layout
+from rama.layouts.tile import Tile
 from rama.util import closure
 from rama.view_manager import ViewManager
 
@@ -11,16 +12,20 @@ app = Main()
 wm = app.wm
 cmd = app.cmd
 evd = app.evd
-layouts = [tile(nmaster=1)]
+layouts = [layout(Tile, nmaster=1)]
 views = ViewManager(wm, cmd, layouts)
 
 bindings = {
     'M-x': launch('xeyes'),
     'M-t': launch('xterm'),
     'M-space': launch('dmenu_run'),
-    'M-n': cmd.send('layout next'),
-    'M-S-p': views.select_prev,
-    'M-S-n': views.select_next,
+    'M-i': cmd.send('layout focus prev'),
+    'M-k': cmd.send('layout focus next'),
+    'M-j': cmd.send('layout focus left'),
+    'M-l': cmd.send('layout focus right'),
+    'M-Return': cmd.send('layout zoom'),
+    'M-p': views.select_prev,
+    'M-n': views.select_next,
     'M-v': cmd.send('view test one two three'),
 }
 
