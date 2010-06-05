@@ -3,7 +3,8 @@ Classes for managing X11 clients.
 """
 
 import xcb
-import xcb.xproto
+from xcb import xproto
+
 
 class Client(object):
     """
@@ -31,13 +32,18 @@ class Client(object):
         value_list = []
         for k in 'x', 'y', 'width', 'height':
             if k in changes:
-                value_mask |= getattr(xcb.xproto.ConfigWindow, k.capitalize())
+                value_mask |= getattr(xproto.ConfigWindow, k.capitalize())
                 value_list.append(changes[k])
         if value_mask:
             # Attempt to configure the window. If we can't, this
             # window must have been destroyed, and the WM must have
             # received the event.
             self.conn.core.ConfigureWindow(self.win, value_mask, value_list)
+
+    def hide(self):
+        value_mask = xproto.ConfigWindow.X | xproto.ConfigWindow.Y
+        value_list = [self.geom.x + (2*self.geom.width), self.geom.y]
+        self.conn.core.ConfigureWindow(self.win, value_mask, value_list)
 
     def redisplay(self):
         self.configure(x=self.geom.x, y=self.geom.y, 

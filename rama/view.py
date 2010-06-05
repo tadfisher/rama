@@ -1,17 +1,21 @@
 import layout
 
 class View(object):
-    def __init__(self, name, geom, layouts):
-        self.name = name
+    def __init__(self, geom, layouts):
         self.geom = geom
         self.layouts = []
         self.clients = []
-
         for setup in layouts:
             self.layouts.append(setup(geom))
-
         self.sel_layout = self.layouts[0]
 
+    def activate(self):
+        self.redisplay()
+
+    def deactivate(self):
+        for client in self.clients:
+            client.hide()
+        
     def redisplay(self):
         frame = self.sel_layout.arrange()
         frame.redisplay()
@@ -27,3 +31,4 @@ class View(object):
             self.clients.remove(client)
         for layout in self.layouts:
             layout.remove(client)
+

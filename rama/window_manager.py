@@ -2,7 +2,6 @@ from rama.client import Client
 from rama.dispatch import Dispatcher
 from rama.keys import Keymap
 from rama.util import Geom
-from rama.view import View
 from xcb import xproto
 from xcb.xproto import EventMask
 
@@ -23,15 +22,12 @@ CLIENT_EV_LIST = [
             EventMask.StructureNotify]
     
 
-
 class WindowManager(Dispatcher):
     clients = []
     focused = []
-    views = []
     sel_client = None
-    sel_view = None
 
-    def __init__(self, conn, config):
+    def __init__(self, conn):
         super(WindowManager, self).__init__(wm=self)
 
         self.conn = conn
@@ -40,11 +36,6 @@ class WindowManager(Dispatcher):
         setup = conn.get_setup();
         self.root = root = setup.roots[conn.pref_screen]
         self.root_geom = Geom(0, 0, root.width_in_pixels, root.height_in_pixels)
-
-        # Setup views
-        for name in config['views']:
-            self.views.append(View(name, self.root_geom, config['layouts']))
-        self.sel_view = self.views[0]
 
     def start_managing(self):
         # Select for WM events
@@ -79,7 +70,7 @@ class WindowManager(Dispatcher):
             xproto.InputFocus.PointerRoot,
             client.win, 
             xproto.Time.CurrentTime)
-        self.conn.flush()
+        self.flush()
 
     def unfocus(self, client):
         self.conn.core.SetInputFocus(
@@ -102,25 +93,22 @@ class WindowManager(Dispatcher):
         value_mask = xproto.CW.EventMask
         self.conn.core.ChangeWindowAttributes(win, value_mask, CLIENT_EV_LIST)
 
-        self.sel_view.add_client(client)
-        self.sel_view.redisplay()
         self.conn.core.MapWindow(win)
-        self.conn.flush()
-
         self.dispatch('after_manage_window', win=win, client=client)
-
+        self.flush()
         return client
     
     def unmanage_client(self, client):
-        for view in self.views:
-            if client in view.clients:
-                view.remove_client(client)
+        self.dispatch('before_unmanage_client', client=client)
         self.clients.remove(client)
-        self.sel_view.redisplay()
-        self.conn.flush()
+        self.dispatch('after_unmanage_client', client=client)
+        self.flush()
 
     def win_to_client(self, win):
         for client in self.clients:
             if client.win == win:
                 return client
         return None
+
+    def flush(self):
+        self.conn.flush()
