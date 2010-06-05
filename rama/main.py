@@ -1,7 +1,6 @@
 import os
 from rama.command import CommandDispatcher
 from rama.event import EventDispatcher
-from rama.view_manager import ViewManager
 from rama.window_manager import WindowManager
 import xcb
 import xcb.xproto

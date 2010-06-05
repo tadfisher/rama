@@ -49,7 +49,7 @@ class ViewManager(object):
     def select_index(self, index):
         if len(self.views) == 1:
             return
-        if index < 0 or index > len(self.views):
+        if index < 0 or index > len(self.views)-1:
             return
         names = self.views.keys()
         name = names[index]

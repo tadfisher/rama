@@ -86,7 +86,8 @@ Window frames are extensible as well.
    view rename [old] [new]
 
 ** Layout commands
-   layout [layout-cmd]
+   layout [layout-cmd]    (we don't know what a layout might want to do)
+
 ** 
 
 * Proposed D-BUS API

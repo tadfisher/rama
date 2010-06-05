@@ -49,3 +49,10 @@ Many ideas and some code were gleaned from:
 * dwm. http://dwm.suckless.org/ 
   Specifically, what magical incantations have to go down the wire in
   response to various X events.
+
+
+License
+-------
+
+This software is made available under the open-source MIT license. See
+`LICENSE' for details.

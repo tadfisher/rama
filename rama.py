@@ -17,15 +17,15 @@ views = ViewManager(wm, cmd, layouts)
 bindings = {
     'M-x': launch('xeyes'),
     'M-t': launch('xterm'),
+    'M-space': launch('dmenu_run'),
     'M-n': cmd.send('layout next'),
     'M-S-p': views.select_prev,
     'M-S-n': views.select_next,
     'M-v': cmd.send('view test one two three'),
-    'M-1': closure(views.select_index, 0),
-    'M-2': closure(views.select_index, 1),
-    'M-3': closure(views.select_index, 2),
-    'M-4': closure(views.select_index, 3)
 }
+
+for i in range(9):
+    bindings['M-%d' % (i+1)] = closure(views.select_index, i)
 
 event.register_all(evd)
 
