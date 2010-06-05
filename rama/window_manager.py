@@ -8,13 +8,20 @@ from xcb.xproto import EventMask
 
 
 WM_EV_MASK = (
-    EventMask.EnterWindow          | 
-    EventMask.FocusChange          |
-    EventMask.KeyPress             |
-    EventMask.LeaveWindow          |
-    EventMask.PropertyChange       | 
-    EventMask.SubstructureNotify   |
+    EventMask.EnterWindow | 
+    EventMask.FocusChange |
+    EventMask.KeyPress |
+    EventMask.LeaveWindow |
+    EventMask.PropertyChange | 
+    EventMask.SubstructureNotify |
     EventMask.SubstructureRedirect)
+
+CLIENT_EV_LIST = [
+            EventMask.EnterWindow | 
+            EventMask.FocusChange |
+            EventMask.PropertyChange |
+            EventMask.StructureNotify]
+    
 
 
 class WindowManager(Dispatcher):
@@ -39,9 +46,6 @@ class WindowManager(Dispatcher):
             self.views.append(View(name, self.root_geom, config['layouts']))
         self.sel_view = self.views[0]
 
-        # Keybindings
-        self.keymap = Keymap(conn, config['keys'])
-        
     def start_managing(self):
         # Select for WM events
         cookie = self.conn.core.ChangeWindowAttributesChecked(
@@ -52,7 +56,6 @@ class WindowManager(Dispatcher):
             cookie.check()
         except xproto.BadAccess:
             raise Exception("Another window manager is already running.")
-        self.keymap.grab(self.conn, self.root.root)
         self.scan_for_clients()
         
     def stop_managing(self):
@@ -97,16 +100,11 @@ class WindowManager(Dispatcher):
 
         # Select for client events
         value_mask = xproto.CW.EventMask
-        value_list = [
-            EventMask.EnterWindow    | 
-            EventMask.FocusChange    |
-            EventMask.PropertyChange |
-            EventMask.StructureNotify
-            ]
-        self.conn.core.ChangeWindowAttributes(win, value_mask, value_list)
-        self.conn.core.MapWindow(win)
+        self.conn.core.ChangeWindowAttributes(win, value_mask, CLIENT_EV_LIST)
+
         self.sel_view.add_client(client)
         self.sel_view.redisplay()
+        self.conn.core.MapWindow(win)
         self.conn.flush()
 
         self.dispatch('after_manage_window', win=win, client=client)

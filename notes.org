@@ -1,4 +1,4 @@
-vowm - view-oriented window manager
+rama - tiling window manager
 
 * Overview
 ----------
@@ -75,6 +75,20 @@ wishes to organize the frames on the screen.
 
 Window frames are extensible as well. 
 
+
+* Command interface
+** View commands
+   view new [name]
+   view list
+   view current
+   view next
+   view prev
+   view select [name]
+   view index [num]
+   view rename [old] [new]
+** Layout commands
+   layout [layout-cmd]
+** 
 
 * Proposed D-BUS API
 --------------------

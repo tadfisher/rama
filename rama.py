@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from rama import event
 from rama.actions import launch
+from rama.keys import Keymap
 from rama.main import main
 from rama.layouts.tile import tile
 
@@ -11,16 +12,23 @@ def hello_world(**kw):
 config = {
     'layouts': [tile(nmaster=2)],
     'views': ['main'],
-    'keys': {
-        'M-x': launch('xeyes'),
-        'M-t': launch('xterm'),
-        }
     }
 
 app = main(config)
 wm = app.wm
-xec = app.xec
+cmd = app.cmd
+evd = app.evd
 
-event.register_all(xec)
+bindings = {
+    'M-x': launch('xeyes'),
+    'M-t': launch('xterm'),
+    'M-n': cmd.send('layout next')
+}
+
+keys = Keymap(wm.conn, bindings)
+keys.grab(wm.conn, wm.root.root)
+
+event.register_all(evd)
+evd.register('key_press', keys.handle)
 
 app.run()

@@ -5,6 +5,13 @@ class Layout(object):
     Base class for layouts. This is here to enforce behavior all
     layouts should support.
     """
+
+    def activate(self):
+        raise NotImplementedError
+    
+    def deactivate(self):
+        raise NotImplementedError
+    
     def arrange(self):
         raise NotImplementedError
 

@@ -1,5 +1,6 @@
 import os
-from rama.event import EventController
+from rama.command import CommandDispatcher
+from rama.event import EventDispatcher
 from rama.window_manager import WindowManager
 import xcb
 import xcb.xproto
@@ -9,7 +10,8 @@ class main(object):
     def __init__(self, config):
         conn = xcb.connect(display=os.environ['DISPLAY'])
         self.wm = WindowManager(conn, config)
-        self.xec = EventController(self.wm)
+        self.cmd = CommandDispatcher(self.wm)
+        self.evd = EventDispatcher(self.wm)
 
     def run(self):
         # TODO Replace with init dispatch
@@ -17,6 +19,6 @@ class main(object):
 
         # Main loop
         while True:
-            self.xec.dispatch_events()
+            self.evd.dispatch_events()
 
         self.conn.disconnect()

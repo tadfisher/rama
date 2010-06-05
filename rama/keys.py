@@ -84,7 +84,8 @@ class Keymap(object):
             for mod in modifiers:
                 conn.core.UngrabKey(key[1], root, key[0] | mod)
 
-    def handle(self, keypress):
+    def handle(self, **kw):
+        keypress = kw['event']
         keysym = self.syms.get_keysym(keypress.detail, 0)
         mask = self.cleanmask(keypress.state)
         for key in self.bindings:

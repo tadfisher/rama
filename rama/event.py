@@ -9,9 +9,9 @@ from xcb import xproto
 CAPITAL_LETTER_RE = re.compile(r'\B([A-Z])')
 
 
-class EventController(Dispatcher):
+class EventDispatcher(Dispatcher):
     def __init__(self, wm):
-        super(EventController, self).__init__(wm=wm)
+        super(EventDispatcher, self).__init__(wm=wm)
         self.conn = wm.conn
 
     def dispatch_events(self):
@@ -64,12 +64,6 @@ def focus_in(**kw):
             xproto.Time.CurrentTime)
 
 
-def key_press(**kw):
-    wm = kw['wm']
-    event = kw['event']
-    wm.keymap.handle(event)
-
-
 def map_request(**kw):
     wm = kw['wm']
     event = kw['event']
@@ -87,11 +81,8 @@ def unmap_notify(**kw):
 
 
 def register_all(dispatcher):
-    for evname in ("destroy_notify enter_notify focus_in key_press map_request"
+    for evname in ("destroy_notify enter_notify focus_in map_request"
                    " unmap_notify").split():
         func = globals().get(evname)
         if func:
-            print "Registering handler for %s!" % evname
             dispatcher.register(evname, func)
-        else:
-            print "No handler for %s!" % evname
