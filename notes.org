@@ -1,15 +1,14 @@
 rama - tiling window manager
 
 * Overview
-----------
 
-vowm is a tiling window manager optimized for laptops with small
+rama is a tiling window manager optimized for laptops with small
 displays. It aims to combine the ease-of-use of the traditional WIMP
 design with the flexibility of today's tiling window managers.
 
-What sets vowm apart is its take on the multiple-workspace
+What sets rama apart is its take on the multiple-workspace
 paradigm. Rather than having a distinct one-to-one mapping between
-windows and workspaces, vowm allows users to create "views", which
+windows and workspaces, rama allows users to create "views", which
 allow windows to appear on multiple workspaces and in different
 positions on each workspace. Windows are made available in a global
 pool, and are selectable by the user for inclusion/exclusion from the
@@ -17,7 +16,7 @@ current view.
 
 Views may be created and destroyed on the fly.
 
-vowm intends to expose this functionality via D-BUS, so views and
+rama intends to expose this functionality via D-BUS, so views and
 windows may be selectable using alternative methods; for example, a
 taskbar or dock could be implemented for mouse selection, while an
 input window could be implemented for keyboard selection (ideally with
@@ -26,23 +25,23 @@ to do so to implement such mechanisms as part of some other desktop
 environment's widgets; for example, a Gnome panel applet could handle
 the taskbar functionality. 
 
-As such, most input functions need not be implemented into vowm
-itself. This allows vowm to remain small and understandable.
+As such, most input functions need not be implemented into rama
+itself. This allows rama to remain small and understandable.
 
-vowm may not be appropriate for multiple displays. Multiple screens
+rama may not be appropriate for multiple displays. Multiple screens
 present an issue for dealing with views---what happens when the same
 application should appear on two displays at once, in different
 positions/sizes? Thus multiple-screen support may be limited to
 support usage scenarios typical with laptop users; one idea is to use
 a secondary display for a full-screen presentation view.
 
-vowm is a tiling window manager. Each view organizes windows according
+rama is a tiling window manager. Each view organizes windows according
 to a view-local tiling algorithm, called a "layout", selectable by the
 user. A floating layer shall be implemented, as well as a floating
 layout, for those applications that cannot be used well in tiled
 mode. Users of dwm should be familiar with this feature.
 
-Unlike other tiling window managers, windows in vowm may be
+Unlike other tiling window managers, windows in rama may be
 "hidden"---that is, they may not appear in any view. This is akin to
 "minimization" in traditional window managers, such as Gnome's
 Metacity and the Windows shell.
@@ -60,7 +59,6 @@ algorithms. Thus applications such as the Gimp, with multiple floating
 and aggravation for users.
 
 * Layouts
----------
 
 Layouts are classes that set the geometry of visible frames. Layouts
 may also include methods specific to that layout, such as adding more
@@ -75,8 +73,8 @@ wishes to organize the frames on the screen.
 
 Window frames are extensible as well. 
 
-
 * Command interface
+
 ** View commands
    view new [name]
    view list
@@ -86,12 +84,12 @@ Window frames are extensible as well.
    view select [name]
    view index [num]
    view rename [old] [new]
+
 ** Layout commands
    layout [layout-cmd]
 ** 
 
 * Proposed D-BUS API
---------------------
 
 ** Object structure
 

@@ -14,7 +14,6 @@ class ViewManager(object):
         wm.register('before_unmanage_client', self.unmanage_client)
         cmd.register('command_view', self.command)
 
-
     def set_default(self, *names):
         self.default_names = []
         for name in names:

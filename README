@@ -1,0 +1,51 @@
+rama - yet another tiling window manager
+----------------------------------------
+
+rama is a window manager that aims to provide some features to manage
+tasks/workflows. It also tiles your windows.
+
+rama is written in pure python, and uses the xpyb library to talk to
+X. Currently, it is not very useful, and major design changes are
+bound to occur.
+
+See `notes.org' for an explanation of some of the design ideas I have
+for rama. Keep in mind that these notes are quite old, and some
+proposals (such as the use of D-BUS for IPC) will likely be
+reconsidered.
+
+
+Dependencies
+------------
+
+Required:
+python (tested on 2.6)
+xpyb
+
+Optional:
+Xephyr (for testing)
+
+
+Testing
+-------
+
+See `test-rama.sh' for a simple script that launches rama in a Xephyr
+instance. You can use the keybindings to launch programs, or prepend
+`DISPLAY=:1' to a shell command.
+
+Edit `rama.py' to configure rama.
+
+
+Acknowledgements
+----------------
+
+Many ideas and some code were gleaned from:
+
+* mackstann's whimsy project. http://incise.org/whimsy
+  Specifically, the event dispatching framework.
+
+* The samurai-x project. http://samurai-x.org/
+  Specifically, the files `keysymdef.py' and `keysyms.py'.
+
+* dwm. http://dwm.suckless.org/ 
+  Specifically, what magical incantations have to go down the wire in
+  response to various X events.

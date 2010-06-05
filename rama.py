@@ -29,6 +29,7 @@ bindings = {
 
 event.register_all(evd)
 
+# TODO Clean this up
 keys = Keymap(wm.conn, bindings)
 keys.grab(wm.conn, wm.root.root)
 evd.register('key_press', keys.handle)
